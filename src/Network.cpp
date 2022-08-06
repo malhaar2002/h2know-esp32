@@ -38,9 +38,10 @@ void Network::firebaseInit() {
 }
 
 void Network::firestoreDataUpdate(double volume) {
-    if (WiFi.status == WL_CONNECTED && Firebase.ready()) {
+    if (WiFi.status() == WL_CONNECTED && Firebase.ready()) {
         String documentPath = "House/Room1";
         FirebaseJson content;
-        content.set("fields/temp")
+        content.set("fields/volume");
+        
     }
 }
