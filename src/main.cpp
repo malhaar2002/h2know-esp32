@@ -1,6 +1,8 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <Firebase_ESP_Client.h>
+#include "date.h"
+#include <iostream>
 
 // Provide the token generation process info.
 #include "addons/TokenHelper.h"
@@ -66,8 +68,8 @@ void setup()
   Serial.print("Connecting to Wi-Fi");
   while (WiFi.status() != WL_CONNECTED)
   {
-      Serial.print(".");
-      delay(300);
+    Serial.print(".");
+    delay(300);
   }
   Serial.println();
   Serial.print("Connected with IP: ");
@@ -83,12 +85,12 @@ void setup()
   /* Sign up */
   if (Firebase.signUp(&config, &auth, "", ""))
   {
-      Serial.println("ok");
-      signupOK = true;
+    Serial.println("ok");
+    signupOK = true;
   }
   else
   {
-      Serial.printf("%s\n", config.signer.signupError.message.c_str());
+    Serial.printf("%s\n", config.signer.signupError.message.c_str());
   }
 
   /* Assign the callback function for the long running token generation task */
@@ -101,8 +103,8 @@ void setup()
 void loop()
 {
   currentMillis = millis();
-  if (currentMillis - previousMillis > interval) {
-    
+  if (currentMillis - previousMillis > interval)
+  {
     pulse1Sec = pulseCount;
     pulseCount = 0;
 
@@ -121,7 +123,7 @@ void loop()
 
     // Add the millilitres passed in this second to the cumulative total
     totalMilliLitres += flowMilliLitres;
-    
+
     // Print the flow rate for this second in litres / minute
     Serial.print("Flow rate: ");
     Serial.print(int(flowRate));
@@ -137,32 +139,46 @@ void loop()
 
     if (Firebase.ready() && signupOK && (millis() - sendDataPrevMillis > 15000 || sendDataPrevMillis == 0))
     {
-        sendDataPrevMillis = millis();
-        // Write email address on path test/email
-        if (Firebase.RTDB.setString(&fbdo, "test/email", "malhaar.arora@plaksha.edu.in"))
-        {
-            Serial.println("PASSED");
-            Serial.println("PATH: " + fbdo.dataPath());
-            Serial.println("TYPE: " + fbdo.dataType());
-        }
-        else
-        {
-            Serial.println("FAILED");
-            Serial.println("REASON: " + fbdo.errorReason());
-        }
+      sendDataPrevMillis = millis();
 
-        // Write volume used on path test/volume
-        if (Firebase.RTDB.setFloat(&fbdo, "test/volume", totalMilliLitres/1000.0))
-        {
-            Serial.println("PASSED");
-            Serial.println("PATH: " + fbdo.dataPath());
-            Serial.println("TYPE: " + fbdo.dataType());
-        }
-        else
-        {
-            Serial.println("FAILED");
-            Serial.println("REASON: " + fbdo.errorReason());
-        }
+      // Write email address on path test/email
+      if (Firebase.RTDB.setString(&fbdo, "test/email", "malhaar.arora@plaksha.edu.in"))
+      {
+        Serial.println("PASSED");
+        Serial.println("PATH: " + fbdo.dataPath());
+        Serial.println("TYPE: " + fbdo.dataType());
+      }
+      else
+      {
+        Serial.println("FAILED");
+        Serial.println("REASON: " + fbdo.errorReason());
+      }
+
+      // Write volume used on path test/volume
+      if (Firebase.RTDB.setFloat(&fbdo, "test/volume", totalMilliLitres / 1000.0))
+      {
+        Serial.println("PASSED");
+        Serial.println("PATH: " + fbdo.dataPath());
+        Serial.println("TYPE: " + fbdo.dataType());
+      }
+      else
+      {
+        Serial.println("FAILED");
+        Serial.println("REASON: " + fbdo.errorReason());
+      }
+
+      // Write current date on path test/volume
+      if (Firebase.RTDB.setString(&fbdo, "test/date", getTodayDate()))
+      {
+        Serial.println("PASSED");
+        Serial.println("PATH: " + fbdo.dataPath());
+        Serial.println("TYPE: " + fbdo.dataType());
+      }
+      else
+      {
+        Serial.println("FAILED");
+        Serial.println("REASON: " + fbdo.errorReason());
+      }
     }
   }
 }
